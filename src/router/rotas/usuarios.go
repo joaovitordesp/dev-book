@@ -1,38 +1,33 @@
 package rotas
 
-import "net/http"
+import (
+	"api-bk/src/controllers"
+	"net/http"
+)
 
 var rotasUsuarios = []Rota{
 	{
-		URI:    "/usuarios",
-		Metodo: http.MethodPost,
-		Funcao: func(w http.ResponseWriter, r *http.Request) {
-
-		},
+		URI:                "/usuarios",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.CriarUsuario,
 		RequerAutenticacao: false,
 	},
 	{
-		URI:    "/usuarios",
-		Metodo: http.MethodGet,
-		Funcao: func(w http.ResponseWriter, r *http.Request) {
-
-		},
+		URI:                "/usuarios",
+		Metodo:             http.MethodGet,
+		Funcao:             controllers.BuscarUsuario,
 		RequerAutenticacao: false,
 	},
 	{
-		URI:    "/usuarios/{usuarioId}",
-		Metodo: http.MethodGet,
-		Funcao: func(w http.ResponseWriter, r *http.Request) {
-
-		},
+		URI:                "/usuarios/{usuarioId}",
+		Metodo:             http.MethodGet,
+		Funcao:             controllers.BuscarUsuarios,
 		RequerAutenticacao: false,
 	},
 	{
-		URI:    "/usuarios/{usuarioId}",
-		Metodo: http.MethodPut,
-		Funcao: func(w http.ResponseWriter, r *http.Request) {
-
-		},
+		URI:                "/usuarios/{usuarioId}",
+		Metodo:             http.MethodPut,
+		Funcao:             controllers.AtualizarUsuario,
 		RequerAutenticacao: false,
 	},
 }
