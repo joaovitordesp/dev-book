@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"api-bk/src/auth"
 	"api-bk/src/database"
 	"api-bk/src/models"
 	"api-bk/src/repository"
 	"api-bk/src/response"
 	"api-bk/src/security"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -45,5 +47,6 @@ func LoginUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := security.GerarToken(userSaveOnDatabase.ID)
+	token, err := auth.CriarToken(userSaveOnDatabase.ID)
+	fmt.Println(token)
 }

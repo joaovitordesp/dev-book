@@ -8,6 +8,17 @@ import (
 	"net/http"
 )
 
+// func init() { //Gerador de  SECRET KEY, deve-se usar só uma vez para incluir o valor no arquivo .env
+// 	key := make([]byte, 64)
+
+// 	if _, err := rand.Read(key); err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	stringBase64 := base64.StdEncoding.EncodeToString(key)
+// 	fmt.Println("Key do JWT:", stringBase64)
+// }
+
 func main() {
 	config.Carregar()
 

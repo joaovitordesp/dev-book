@@ -13,6 +13,7 @@ import (
 var (
 	StringConexaoBanco = ""
 	Porta              = 5000
+	SecretKey          []byte
 )
 
 // vai inicializar as variaveis de ambiente
@@ -23,9 +24,8 @@ func Carregar() {
 		log.Fatal("Não foi possível carregar as variaveis de ambiente.")
 	}
 
-	Porta, erro := strconv.Atoi(os.Getenv("API_PORT"))
-	fmt.Sprintf("Porta atribuída: %d", Porta)
-	if erro != nil {
+	Porta, err = strconv.Atoi(os.Getenv("API_PORT"))
+	if err != nil {
 		Porta = 9000
 		http.ListenAndServe(fmt.Sprintf(":%d", Porta), nil)
 
@@ -37,4 +37,5 @@ func Carregar() {
 		os.Getenv("DB_NOME"),
 	)
 
+	SecretKey = []byte(os.Getenv("SECRET_KEY"))
 }
