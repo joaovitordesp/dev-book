@@ -122,3 +122,22 @@ func (repository usuarios) DeletarUsuario(usuarioID uint64) error {
 
 	return nil
 }
+
+func (repository usuarios) BuscarPorEmail(email string) (models.Usuario, error) {
+	row, err := repository.db.Query("select id, senha from usuarios where email =?", email)
+	if err != nil {
+		return models.Usuario{}, err
+	}
+
+	defer row.Close()
+
+	var usuario models.Usuario
+
+	if row.Next() {
+		if err = row.Scan(&usuario.ID, &usuario.Senha); err != nil {
+			return models.Usuario{}, err
+		}
+	}
+
+	return usuario, nil
+}
