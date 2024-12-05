@@ -2,6 +2,7 @@ package auth
 
 import (
 	"api-bk/src/config"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -24,8 +25,17 @@ func CriarToken(usuarioID uint64) (string, error) {
 
 func ValidarToken(r *http.Request) error {
 	tokenString := extrairToken(r)
+	token, err := jwt.Parse(tokenString, returnVerificationKey)
 
-	return nil
+	if err != nil || !token.Valid {
+		return err
+	}
+
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return nil
+	}
+
+	return errors.New("invalid token")
 }
 
 func extrairToken(r *http.Request) string {
