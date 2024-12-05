@@ -8,7 +8,6 @@ import (
 	"api-bk/src/response"
 	"api-bk/src/security"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -48,5 +47,9 @@ func LoginUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token, err := auth.CriarToken(userSaveOnDatabase.ID)
-	fmt.Println(token)
+	if err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
 }
