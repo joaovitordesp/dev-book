@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"api-bk/src/auth"
 	"api-bk/src/database"
 	"api-bk/src/models"
 	"api-bk/src/repository"
@@ -106,6 +107,17 @@ func AtualizarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	usuarioIDToken, err := auth.ExtrairUsuarioID(r)
+	if err != nil || usuarioIDToken != usuarioID {
+		response.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioID != usuarioIDToken {
+		response.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
 	request, erro := io.ReadAll(r.Body)
 	if erro != nil {
 		response.Erro(w, http.StatusUnprocessableEntity, erro)
@@ -144,6 +156,17 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
 	if err != nil {
 		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	usuarioIDToken, err := auth.ExtrairUsuarioID(r)
+	if err != nil || usuarioIDToken != usuarioID {
+		response.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	if usuarioID != usuarioIDToken {
+		response.Erro(w, http.StatusForbidden, err)
 		return
 	}
 

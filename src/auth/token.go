@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -48,9 +49,29 @@ func extrairToken(r *http.Request) string {
 	return ""
 }
 
+func ExtrairUsuarioID(r *http.Request) (uint64, error) {
+	tokenString := extrairToken(r)
+	token, err := jwt.Parse(tokenString, returnVerificationKey)
+
+	if err != nil || !token.Valid {
+		return 0, err
+	}
+
+	if roles, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		usuarioID, err := strconv.ParseUint(fmt.Sprintf("%.0f", roles["usuarioID"]), 10, 64)
+		if err != nil {
+			return 0, err
+		}
+
+		return usuarioID, nil
+	}
+
+	return 0, errors.New("invalid token")
+}
+
 func returnVerificationKey(token *jwt.Token) (interface{}, error) {
 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		return nil, fmt.Errorf("Sign Method Unxpected! %v", token.Header["alg"])
+		return nil, fmt.Errorf("sign method unxpected! %v", token.Header["alg"])
 	}
 
 	return config.SecretKey, nil
