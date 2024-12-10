@@ -141,3 +141,52 @@ func (repository usuarios) BuscarPorEmail(email string) (models.Usuario, error) 
 
 	return usuario, nil
 }
+
+func (repository usuarios) Follow(usuarioID, seguidorID uint64) error {
+	statement, err := repository.db.Prepare("insert into seguidores (usuario_id, seguidor_id) values(?,?)")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err := statement.Exec(usuarioID, seguidorID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repository usuarios) Unfollow(usuarioID, seguidorID uint64) error {
+	statement, err := repository.db.Prepare("delete from seguidores where usuario_id =? and seguidor_id =?")
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err := statement.Exec(usuarioID, seguidorID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (repository usuarios) SearchFollowers(usuarioID uint64) ([]models.Usuario, error) {
+	rows, err := repository.db.Query("select u.id, u.nome, u.nick, u.email, u.criadoEm from usuarios u join seguidores s on u.id = s.seguidor_id where s.usuario_id =?", usuarioID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var usuarios []models.Usuario
+	for rows.Next() {
+		var usuario models.Usuario
+		if err := rows.Scan(&usuario.ID, &usuario.Nome, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); err != nil {
+			return nil, err
+		}
+		usuarios = append(usuarios, usuario)
+	}
+	return usuarios, nil
+}
