@@ -282,3 +282,75 @@ func SearchFollowers(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, seguidores)
 }
+
+func FollowingUsers(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, erro := database.Conectar()
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repository := repository.NewRepositoryUsuarios(db)
+	followUsers, err := repository.FollowingUsers(usuarioID)
+	if err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response.JSON(w, http.StatusOK, followUsers)
+}
+
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	usuarioIDToken, err := auth.ExtrairUsuarioID(r)
+	if err != nil {
+		response.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	parametros := mux.Vars(r)
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if usuarioIDToken != usuarioID {
+		response.Erro(w, http.StatusUnauthorized, errors.New("você não tem permissão para alterar este usuário"))
+		return
+	}
+
+	bodyRequest, err := io.ReadAll(r.Body)
+
+	var password models.Password
+
+	if err = json.Unmarshal(bodyRequest, &password); err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, erro := database.Conectar()
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repository := repository.NewRepositoryUsuarios(db)
+
+	passSavedOnDatabase, err: repository.SavedOnDatabase(usuarioID)
+	if err!= nil {
+        response.Erro(w, http.StatusInternalServerError, err)
+        return
+    }
+
+
+
+}

@@ -190,3 +190,41 @@ func (repository usuarios) SearchFollowers(usuarioID uint64) ([]models.Usuario, 
 	}
 	return usuarios, nil
 }
+
+func (repository usuarios) FollowingUsers(usuarioID uint64) ([]models.Usuario, error) {
+	rows, err := repository.db.Query(`
+		select u.id, u.nick, u.email, u.criandoEm from usuarios u join seguidores s on u.id s.usuario_id where s.seguidor_id = ?`, usuarioID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var usuarios []models.Usuario
+
+	for rows.Next() {
+		var usuario models.Usuario
+		if err := rows.Scan(&usuario.ID, &usuario.Nick, &usuario.Email, &usuario.CriadoEm); err != nil {
+			return nil, err
+		}
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
+
+func (repository usuarios) SavedOnDatabase(usuarioID uint64) (string, error) {
+	row, err := repository.db.Query("select senha from usuarios where senha_id=?", usuarioID)
+	if err != nil {
+		return "", err
+	}
+	defer row.Close()
+
+	var usuario models.Usuario
+	if row.Next() {
+		if err := row.Scan(&usuario.Senha); err != nil {
+			return "", err
+		}
+	}
+	return usuario.Senha, nil
+}
