@@ -228,3 +228,17 @@ func (repository usuarios) SavedOnDatabase(usuarioID uint64) (string, error) {
 	}
 	return usuario.Senha, nil
 }
+
+func (repository usuarios) UpdatePassword(usuarioID uint64, senhaID string) error {
+	statement, err := repository.db.Prepare("update usuarios set senha= ? where id =?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	if _, err := statement.Exec(usuarioID); err != nil {
+		return err
+	}
+
+	return nil
+}

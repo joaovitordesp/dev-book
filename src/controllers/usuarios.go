@@ -6,6 +6,7 @@ import (
 	"api-bk/src/models"
 	"api-bk/src/repository"
 	"api-bk/src/response"
+	"api-bk/src/security"
 	"encoding/json"
 	"errors"
 	"io"
@@ -345,12 +346,27 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	repository := repository.NewRepositoryUsuarios(db)
 
-	passSavedOnDatabase, err: repository.SavedOnDatabase(usuarioID)
-	if err!= nil {
-        response.Erro(w, http.StatusInternalServerError, err)
-        return
-    }
+	passSavedOnDatabase, err := repository.SavedOnDatabase(usuarioID)
+	if err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
 
+	if err = security.VerificarSenha(passSavedOnDatabase, password.CurrentPassword); err != nil {
+		response.Erro(w, http.StatusUnauthorized, errors.New("senha atual inválida"))
+		return
+	}
 
+	passWithHash, err := security.Hash(password.CurrentPassword)
+	if err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
 
+	if err = repository.UpdatePassword(usuarioID, string(passWithHash)); err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	response.JSON(w, http.StatusNoContent, nil)
 }
