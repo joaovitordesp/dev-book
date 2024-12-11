@@ -29,3 +29,17 @@ CREATE TABLE seguidores (
 
     PRIMARY KEY(usuario_id, seguidor_id)  
 ) ENGINE=InnoDB;
+
+
+CREATE TABLE posts(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(50) NOT NULL,
+    conteudo VARCHAR(255) NOT NULL,
+    likes int default 0
+    criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+
+    autor_id INT NOT NULL,
+    FOREIGN KEY(autor_id)
+    REFERENCES usuarios(id)
+    ON DELETE CASCADE,
+)ENGINE=INNODB;
