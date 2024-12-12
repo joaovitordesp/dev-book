@@ -65,3 +65,38 @@ func (repository Posts) BuscarPostsByID(postID uint64) ([]models.Post, error) {
 	}
 	return posts, nil
 }
+
+func (repository Posts) BuscarPosts(usuarioID uint64) ([]models.Post, error) {
+	rows, err := repository.db.Query(
+		`select distinct p.*, u.nick from posts p
+		inner join usuarios u on u.id = p.author_id
+		inner join posts s on p.author_id = s.usuario_id
+		where u.id = ? or s.seguidor_id = ?;
+		`,
+		usuarioID, usuarioID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []models.Post
+
+	for rows.Next() {
+		var post models.Post
+
+		if err = rows.Scan(
+			&post.ID,
+			&post.Titulo,
+			&post.Conteudo,
+			&post.AutorID,
+			&post.Likes,
+			&post.DataCriacao,
+			&post.AutorNick,
+		); err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
+}

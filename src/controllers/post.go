@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -60,7 +59,11 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindPosts(w http.ResponseWriter, r *http.Request) {
-	nomeOuNick := strings.ToLower(r.URL.Query().Get("usuario"))
+	usuarioID, err := auth.ExtrairUsuarioID(r)
+	if err != nil {
+		response.Erro(w, http.StatusUnauthorized, err)
+		return
+	}
 
 	db, erro := database.Conectar()
 	if erro != nil {
@@ -68,9 +71,9 @@ func FindPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Close()
-	repository := repository.NewRepositoryUsuarios(db)
+	repository := repository.NewRepositoryPosts(db)
 
-	usuarios, erro := repository.Buscar(nomeOuNick)
+	usuarios, erro := repository.BuscarPosts(usuarioID)
 
 	if erro != nil {
 		response.Erro(w, http.StatusBadRequest, erro)
