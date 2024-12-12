@@ -19,7 +19,7 @@ var routesPosts = []Rota{
 		RequerAutenticacao: true,
 	},
 	{
-		URI:                "/posts/{id}",
+		URI:                "/posts/{postID}",
 		Metodo:             http.MethodGet,
 		Funcao:             controllers.FindPostsById,
 		RequerAutenticacao: true,

@@ -33,3 +33,27 @@ func (repository Posts) CreatePost(post models.Post) (uint64, error) {
 
 	return uint64(id), nil
 }
+
+func (repository Posts) BuscarPostsByID(postID uint64) ([]models.Post, error) {
+	rows, err := repository.db.Query(`
+		SELECT p.*, u.nick FROM
+		posts p INNER JOIN usuarios u
+		ON u.id = p.autor_id
+		WHERE p.id = ? 
+	`, postID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var posts []models.Post
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(&post.ID, &post.Titulo, &post.Conteudo, &post.AutorID)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
+}

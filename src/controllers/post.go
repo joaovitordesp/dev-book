@@ -82,7 +82,7 @@ func FindPosts(w http.ResponseWriter, r *http.Request) {
 func FindPostsById(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
-	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	postID, err := strconv.ParseUint(parametros["postID"], 10, 64)
 	if err != nil {
 		response.Erro(w, http.StatusBadRequest, err)
 		return
@@ -94,16 +94,16 @@ func FindPostsById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Close()
-	repository := repository.NewRepositoryUsuarios(db)
+	repository := repository.NewRepositoryPosts(db)
 
-	usuario, erro := repository.BuscarPorID(usuarioID)
+	post, erro := repository.BuscarPostsByID(postID)
 
 	if erro != nil {
 		response.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}
 
-	response.JSON(w, http.StatusOK, usuario)
+	response.JSON(w, http.StatusOK, post)
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
