@@ -49,7 +49,15 @@ func (repository Posts) BuscarPostsByID(postID uint64) ([]models.Post, error) {
 	var posts []models.Post
 	for rows.Next() {
 		var post models.Post
-		err := rows.Scan(&post.ID, &post.Titulo, &post.Conteudo, &post.AutorID)
+		err := rows.Scan(
+			&post.ID,
+			&post.Titulo,
+			&post.Conteudo,
+			&post.AutorID,
+			&post.Likes,
+			&post.DataCriacao,
+			&post.AutorNick,
+		)
 		if err != nil {
 			return nil, err
 		}
