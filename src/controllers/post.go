@@ -16,39 +16,42 @@ import (
 )
 
 func CreatePost(w http.ResponseWriter, r *http.Request) {
-	request, erro := io.ReadAll(r.Body)
-	if erro != nil {
-		response.Erro(w, http.StatusUnprocessableEntity, erro)
+	usuarioID, err := auth.ExtrairUsuarioID(r)
+	if err != nil {
+		response.Erro(w, http.StatusUnauthorized, err)
 		return
 	}
 
-	var usuario models.Usuario
-	if erro = json.Unmarshal(request, &usuario); erro != nil {
-		response.Erro(w, http.StatusBadRequest, erro)
+	bodyRequest, err := io.ReadAll(r.Body)
+	if err != nil {
+		response.Erro(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
-	if err := usuario.Preparar("cadastro"); err != nil {
+	var posts models.Post
+	if err = json.Unmarshal(bodyRequest, &posts); err != nil {
 		response.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
-	db, erro := database.Conectar()
-	if erro != nil {
-		response.Erro(w, http.StatusInternalServerError, erro)
+	posts.AutorID = usuarioID
+
+	db, err := database.Conectar()
+	if err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	defer db.Close()
 
-	repositorio := repository.NewRepositoryUsuarios(db)
-	usuario.ID, erro = repositorio.Criar(usuario)
-	if erro != nil {
-		response.Erro(w, http.StatusInternalServerError, erro)
+	repositorio := repository.NewRepositoryPosts(db)
+	posts.ID, err = repositorio.CreatePost(posts)
+	if err != nil {
+		response.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	response.JSON(w, http.StatusCreated, erro)
+	response.JSON(w, http.StatusCreated, posts)
 }
 
 func FindPosts(w http.ResponseWriter, r *http.Request) {
