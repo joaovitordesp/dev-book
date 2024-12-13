@@ -110,39 +110,16 @@ func FindPostsById(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePost(w http.ResponseWriter, r *http.Request) {
-	parametros := mux.Vars(r)
-
-	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	usuarioID, err := auth.ExtrairUsuarioID(r)
 	if err != nil {
 		response.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
-	usuarioIDToken, err := auth.ExtrairUsuarioID(r)
-	if err != nil || usuarioIDToken != usuarioID {
-		response.Erro(w, http.StatusUnauthorized, err)
-		return
-	}
-
-	if usuarioID != usuarioIDToken {
-		response.Erro(w, http.StatusUnauthorized, err)
-		return
-	}
-
-	request, erro := io.ReadAll(r.Body)
-	if erro != nil {
-		response.Erro(w, http.StatusUnprocessableEntity, erro)
-		return
-	}
-
-	var usuario models.Usuario
-	if erro = json.Unmarshal(request, &usuario); erro != nil {
-		response.Erro(w, http.StatusBadRequest, erro)
-		return
-	}
-
-	if erro = usuario.Preparar("edicao"); erro != nil {
-		response.Erro(w, http.StatusBadRequest, erro)
+	parametros := mux.Vars(r)
+	postID, err := strconv.ParseUint(parametros["postID"], 10, 64)
+	if err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -153,11 +130,39 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	repositorio := repository.NewRepositoryUsuarios(db)
-	if erro = repositorio.AtualizarUsuario(usuarioID, usuario); erro != nil {
+	repositorio := repository.NewRepositoryPosts(db)
+	postSaved, erro := repositorio.BuscarPostsByID(postID)
+	if erro != nil {
 		response.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}
+
+	if postSaved.AutorID != usuarioID {
+		response.Erro(w, http.StatusForbidden, err)
+		return
+	}
+
+	bodyRequest, err := io.ReadAll(r.Body)
+	if err != nil {
+		response.Erro(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	var post models.Post
+	if err = json.Unmarshal(bodyRequest, &post); err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err = post.Preparar(); err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if erro = repositorio.UpdatePost(postID, post); erro != nil {
+
+	}
+
 	response.JSON(w, http.StatusNoContent, nil)
 }
 

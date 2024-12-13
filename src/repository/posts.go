@@ -71,7 +71,8 @@ func (repository Posts) BuscarPosts(usuarioID uint64) ([]models.Post, error) {
 		`select distinct p.*, u.nick from posts p
 		inner join usuarios u on u.id = p.author_id
 		inner join posts s on p.author_id = s.usuario_id
-		where u.id = ? or s.seguidor_id = ?;
+		where u.id = ? or s.seguidor_id = ?
+		order by 1 desc;
 		`,
 		usuarioID, usuarioID)
 
@@ -99,4 +100,18 @@ func (repository Posts) BuscarPosts(usuarioID uint64) ([]models.Post, error) {
 		posts = append(posts, post)
 	}
 	return posts, nil
+}
+
+func (repository Posts) UpdatePost(postId uint64, post models.Post) error {
+	statement, err := repository.db.Prepare("update posts set titulo =?, conteudo =? where id =?")
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(post.Titulo, post.Conteudo, postId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
