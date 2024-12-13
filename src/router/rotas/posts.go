@@ -36,4 +36,22 @@ var routesPosts = []Rota{
 		Funcao:             controllers.DeletePost,
 		RequerAutenticacao: true,
 	},
+	{
+		URI:                "/usuarios/{usuarioID}/posts",
+		Metodo:             http.MethodGet,
+		Funcao:             controllers.FindPostByUsuario,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/posts/likes",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.LikesPost,
+		RequerAutenticacao: true,
+	},
+	{
+		URI:                "/posts/dislikes",
+		Metodo:             http.MethodPost,
+		Funcao:             controllers.DislikesPost,
+		RequerAutenticacao: true,
+	},
 }

@@ -16,3 +16,6 @@ values
 ("Titulo 1", "post do titulo 1", 1),
 ("Titulo 2", "post do titulo 2", 2),
 ("Titulo 3", "post do titulo 3", 3),
+("Titulo 11", "post do titulo 11", 1),
+("Titulo 22", "post do titulo 22", 2),
+("Titulo 33", "post do titulo 33", 3),

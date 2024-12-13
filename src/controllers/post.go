@@ -138,7 +138,7 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if postSaved.AutorID != usuarioID {
-		response.Erro(w, http.StatusForbidden, err)
+		response.Erro(w, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -199,4 +199,82 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response.JSON(w, http.StatusNoContent, nil)
+}
+
+func FindPostByUsuario(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+
+	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, erro := database.Conectar()
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repository := repository.NewRepositoryPosts(db)
+	posts, erro := repository.BuscarPostsByUsuario(usuarioID)
+
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	response.JSON(w, http.StatusOK, posts)
+}
+
+func LikesPost(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+
+	postID, err := strconv.ParseUint(parametros["postID"], 10, 64)
+	if err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, erro := database.Conectar()
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repository.NewRepositoryPosts(db)
+	err = repositorio.LikesPost(postID)
+
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	response.JSON(w, http.StatusOK, err)
+}
+
+func DislikesPost(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+
+	postID, err := strconv.ParseUint(parametros["postID"], 10, 64)
+	if err != nil {
+		response.Erro(w, http.StatusBadRequest, err)
+		return
+	}
+
+	db, erro := database.Conectar()
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+
+	repositorio := repository.NewRepositoryPosts(db)
+	err = repositorio.DislikesPost(postID)
+
+	if erro != nil {
+		response.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	response.JSON(w, http.StatusOK, err)
 }

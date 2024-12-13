@@ -129,3 +129,68 @@ func (repository Posts) DeletePost(postId uint64) error {
 	}
 	return nil
 }
+
+func (repository Posts) BuscarPostsByUsuario(usuarioID uint64) ([]models.Post, error) {
+	rows, err := repository.db.Query(`
+		select p.*, u.nick from posts p
+		join usuarios u on u.id= p.autor_id
+		where p.autor_id = ?
+	`, usuarioID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var posts []models.Post
+
+	for rows.Next() {
+		var post models.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.Titulo,
+			&post.Conteudo,
+			&post.AutorID,
+			&post.Likes,
+			&post.DataCriacao,
+			&post.AutorNick,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
+func (repository Posts) LikesPost(postID uint64) error {
+	statements, err := repository.db.Prepare(`
+		update posts set curtidas = curtidas + 1 where id = ?
+	`)
+	if err != nil {
+		return err
+	}
+
+	defer statements.Close()
+	_, err = statements.Exec(postID)
+	return err
+}
+
+func (repository Posts) DislikesPost(postID uint64) error {
+	statement, err := repository.db.Prepare(`
+		update posts set likes = 
+		CASE WHEN likes > 0 THEN  curtidas - 1 
+		ELSE 0 END	`)
+
+	if err != nil {
+		return err
+	}
+
+	defer statement.Close()
+
+	if _, err = statement.Exec(postID); err != nil {
+		return err
+	}
+
+	return nil
+}
