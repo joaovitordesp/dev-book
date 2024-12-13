@@ -169,19 +169,19 @@ func UpdatePost(w http.ResponseWriter, r *http.Request) {
 func DeletePost(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
-	usuarioID, err := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	postID, err := strconv.ParseUint(parametros["postID"], 10, 64)
 	if err != nil {
 		response.Erro(w, http.StatusBadRequest, err)
 		return
 	}
 
-	usuarioIDToken, err := auth.ExtrairUsuarioID(r)
-	if err != nil || usuarioIDToken != usuarioID {
+	postIDToken, err := auth.ExtrairUsuarioID(r)
+	if err != nil || postIDToken != postID {
 		response.Erro(w, http.StatusUnauthorized, err)
 		return
 	}
 
-	if usuarioID != usuarioIDToken {
+	if postID != postIDToken {
 		response.Erro(w, http.StatusForbidden, err)
 		return
 	}
@@ -193,8 +193,8 @@ func DeletePost(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	repositorio := repository.NewRepositoryUsuarios(db)
-	if erro = repositorio.DeletarUsuario(usuarioID); erro != nil {
+	repositorio := repository.NewRepositoryPosts(db)
+	if erro = repositorio.DeletePost(postID); erro != nil {
 		response.Erro(w, http.StatusInternalServerError, erro)
 		return
 	}
